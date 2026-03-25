@@ -112,6 +112,41 @@
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtdO1c-bvADTGYdIEAfGN_Pc36g2hL3_4",
+  authDomain: "mobilog-report.firebaseapp.com",
+  databaseURL: "https://mobilog-report-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mobilog-report",
+  storageBucket: "mobilog-report.firebasestorage.app",
+  messagingSenderId: "135384880017",
+  appId: "1:135384880017:web:568e70398e403a0116c030"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const snap = await get(ref(db, `users/${user.uid}`));
+  const userData = snap.val() || {};
+  window.currentUserRole = userData.role || 'user';
+  window.currentUserName = userData.name || user.email;
+});
+
+window.logout = async function() {
+  await signOut(auth);
+  window.location.href = 'login.html';
+};
+</script>
 </head>
 <body>
 
@@ -123,9 +158,23 @@
       <h1 style="font-size:16px;letter-spacing:-.3px">대리점 출고 일일 실적 보고</h1>
     </div>
   </div>
-  <div class="header-btns">
+ <div class="header-btns" style="display:flex;align-items:center;gap:8px;">
+    <span style="color:rgba(255,255,255,.7);font-size:12px;margin-right:4px;">
+      👤 <span id="userNameDisplay" style="font-weight:600">로딩중...</span>
+      <span id="userRoleDisplay" style="margin-left:5px;background:rgba(255,255,255,.15);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700"></span>
+    </span>
     <button onclick="showAddModal()">+ 월 추가</button>
     <button id="btn-save" onclick="saveData()">💾 저장</button>
+    <button class="admin-only" onclick="window.location.href='admin.html'"
+      style="display:none;padding:6px 14px;border-radius:7px;border:none;font-size:12px;font-weight:700;background:rgba(245,158,11,.25);color:#FCD34D;cursor:pointer;font-family:inherit;">
+      ⚙️ 사용자 관리
+    </button>
+    <button onclick="logout()"
+      style="padding:6px 14px;border-radius:7px;border:1px solid rgba(255,255,255,.25);font-size:12px;font-weight:700;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-family:inherit;"
+      onmouseover="this.style.background='rgba(239,68,68,.3)'"
+      onmouseout="this.style.background='rgba(255,255,255,.08)'">
+      🚪 로그아웃
+    </button>
   </div>
 </div>
 
