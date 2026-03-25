@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>report.html에 추가할 인증 코드 — 가이드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { background:#0a0e1a; color:#f1f5f9; font-family:'Noto Sans KR',sans-serif; padding:40px 24px; max-width:860px; margin:0 auto; line-height:1.7; }
+  h1 { font-size:22px; margin-bottom:8px; }
+  p { color:#94a3b8; font-size:14px; margin-bottom:32px; }
+  .step { background:#111827; border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:24px; margin-bottom:20px; }
+  .step-num { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; background:#3b82f6; border-radius:50%; font-size:13px; font-weight:700; margin-bottom:12px; }
+  .step h2 { font-size:16px; font-weight:600; margin-bottom:10px; }
+  .step p { margin-bottom:12px; font-size:13px; }
+  pre { background:#0a0e1a; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:16px; font-family:'DM Mono',monospace; font-size:12.5px; color:#93c5fd; overflow-x:auto; line-height:1.6; margin-top:8px; }
+  .highlight { color:#fbbf24; }
+  .note { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:8px; padding:12px 16px; font-size:13px; color:#fcd34d; margin-top:12px; }
+  .success { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:8px; padding:12px 16px; font-size:13px; color:#86efac; }
+</style>
+</head>
+<body>
+
+<h1>🔧 report.html 수정 가이드</h1>
+<p>아래 코드를 기존 report.html에 추가하면 로그인 보호와 역할별 UI가 적용됩니다.</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <h2>&lt;head&gt; 태그 안에 추가 (Firebase SDK 로드)</h2>
+  <pre><span class="highlight">&lt;!-- Firebase Auth Guard --&gt;
+&lt;script type="module"&gt;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtdO1c-bvADTGYdIEAfGN_Pc36g2hL3_4",
+  authDomain: "mobilog-report.firebaseapp.com",
+  databaseURL: "https://mobilog-report-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mobilog-report",
+  storageBucket: "mobilog-report.firebasestorage.app",
+  messagingSenderId: "135384880017",
+  appId: "1:135384880017:web:568e70398e403a0116c030"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// 페이지 로드 시 인증 확인
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    // 비로그인 → 로그인 페이지로
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  // 역할 확인
+  const snap = await get(ref(db, `users/${user.uid}`));
+  const userData = snap.val() || {};
+  const role = userData.role || 'user';
+  const name = userData.name || user.email;
+
+  // 현재 사용자 정보를 전역으로 저장
+  window.currentUserRole = role;
+  window.currentUserName = name;
+  window.currentUserEmail = user.email;
+
+  // UI 업데이트
+  const nameEl = document.getElementById('userNameDisplay');
+  if (nameEl) nameEl.textContent = name;
+
+  const roleEl = document.getElementById('userRoleDisplay');
+  if (roleEl) roleEl.textContent = role === 'admin' ? '관리자' : '일반 직원';
+
+  // 관리자 전용 요소 표시
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = role === 'admin' ? '' : 'none';
+  });
+
+  // 일반 직원 전용 요소 표시
+  document.querySelectorAll('.user-only').forEach(el => {
+    el.style.display = role === 'user' ? '' : 'none';
+  });
+});
+
+// 로그아웃 함수 (전역)
+window.logout = async function() {
+  await signOut(auth);
+  window.location.href = 'login.html';
+};
+&lt;/script&gt;</span></pre>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <h2>상단 네비게이션에 추가할 사용자 정보 영역</h2>
+  <p>기존 report.html의 헤더/상단 영역 어딘가에 아래 HTML을 추가하세요:</p>
+  <pre><span class="highlight">&lt;!-- 사용자 정보 영역 --&gt;
+&lt;div style="display:flex; align-items:center; gap:12px; font-size:13px;"&gt;
+  &lt;span style="color:#94a3b8;"&gt;
+    👤 &lt;span id="userNameDisplay"&gt;...&lt;/span&gt;
+    &lt;span id="userRoleDisplay" style="margin-left:6px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#60a5fa; padding:2px 8px; border-radius:4px; font-size:11px;"&gt;&lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;!-- 관리자만 보임 --&gt;
+  &lt;a href="admin.html" class="admin-only" style="display:none; color:#f59e0b; font-size:12px; text-decoration:none; border:1px solid rgba(245,158,11,0.3); padding:4px 10px; border-radius:6px;"&gt;
+    ⚙️ 사용자 관리
+  &lt;/a&gt;
+  
+  &lt;button onclick="logout()" style="background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:5px 12px; color:#94a3b8; font-size:12px; cursor:pointer;"&gt;
+    로그아웃
+  &lt;/button&gt;
+&lt;/div&gt;</span></pre>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <h2>역할별 UI 제어 (선택사항)</h2>
+  <p>특정 요소를 관리자만 보이게 하려면 class="admin-only"를 추가하세요:</p>
+  <pre><span class="highlight">&lt;!-- 관리자만 볼 수 있는 요소 --&gt;
+&lt;button class="admin-only" style="display:none;"&gt;데이터 삭제&lt;/button&gt;
+&lt;div class="admin-only" style="display:none;"&gt;전체 팀원 데이터&lt;/div&gt;
+
+&lt;!-- 일반 직원만 볼 수 있는 요소 --&gt;
+&lt;div class="user-only" style="display:none;"&gt;내 실적만 보기&lt;/div&gt;</span></pre>
+</div>
+
+<div class="step">
+  <div class="step-num">4</div>
+  <h2>GitHub에 파일 업로드 순서</h2>
+  <pre>📁 GitHub Repository (mobillug_y)
+├── <span class="highlight">login.html</span>      ← 새로 추가 (로그인 페이지)
+├── <span class="highlight">admin.html</span>     ← 새로 추가 (사용자 관리)
+└── report.html     ← 기존 파일 (위 코드 추가)</pre>
+  <div class="note">
+    ⚠️ Authentication이 활성화되어야 합니다.<br>
+    Firebase Console → 보안 → Authentication → 이메일/비밀번호 → 사용 설정
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">5</div>
+  <h2>첫 관리자 계정 만들기</h2>
+  <p>admin.html을 사용하기 위해 최초 관리자 계정을 Firebase Console에서 직접 만들어야 합니다:</p>
+  <pre>1. Firebase Console → Authentication → Users → 사용자 추가
+2. 이메일 + 비밀번호로 계정 생성
+3. 생성된 UID 복사
+4. Realtime Database → 데이터 추가:
+
+users/
+  └── [복사한 UID]/
+        ├── name: "관리자 이름"
+        ├── email: "admin@example.com"
+        └── role: "admin"    ← 반드시 "admin"으로</pre>
+  <div class="success">
+    ✅ 이후부터는 admin.html에서 팀원 계정을 직접 생성·관리할 수 있습니다!
+  </div>
+</div>
+
+</body>
+</html>

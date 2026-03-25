@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOBILLUG — 관리자 설정</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.07);
+    --accent: #3b82f6;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --text: #f1f5f9;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --admin-color: #f59e0b;
+    --user-color: #3b82f6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+  }
+
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,14,26,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-left { display: flex; align-items: center; gap: 16px; }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .nav-logo-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .nav-divider { width: 1px; height: 20px; background: var(--border); }
+
+  .nav-badge {
+    background: rgba(245,158,11,0.15);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: var(--admin-color);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+
+  .btn-nav {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    color: var(--text2);
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-nav:hover { border-color: var(--accent); color: var(--text); }
+
+  /* MAIN */
+  .main {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .page-header {
+    margin-bottom: 36px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .page-header p { font-size: 14px; color: var(--text3); }
+
+  /* SECTION */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease 0.05s both;
+  }
+
+  .section-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title .icon {
+    width: 28px; height: 28px;
+    background: var(--surface2);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .section-body { padding: 24px; }
+
+  /* 사용자 추가 폼 */
+  .add-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-field label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .form-field input, .form-field select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .form-field input:focus, .form-field select:focus {
+    border-color: var(--accent);
+  }
+
+  .form-field select option { background: var(--surface2); }
+
+  .btn-add {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    height: 40px;
+  }
+
+  .btn-add:hover { background: #2563eb; transform: translateY(-1px); }
+
+  /* 사용자 목록 */
+  .user-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .user-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+
+  .user-item:hover { border-color: rgba(255,255,255,0.12); }
+
+  .user-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .avatar-admin { background: rgba(245,158,11,0.15); color: var(--admin-color); }
+  .avatar-user { background: rgba(59,130,246,0.15); color: var(--user-color); }
+
+  .user-info { flex: 1; min-width: 0; }
+
+  .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .user-email {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .role-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+
+  .badge-admin {
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.25);
+    color: var(--admin-color);
+  }
+
+  .badge-user {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: var(--user-color);
+  }
+
+  .user-actions { display: flex; gap: 6px; }
+
+  .btn-role-change {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: var(--text2);
+    font-size: 11px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-role-change:hover { border-color: var(--warning); color: var(--warning); }
+
+  .btn-delete {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    color: var(--text3);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* 알림 */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .toast.show { display: flex; }
+  .toast.success { border-color: rgba(34,197,94,0.3); }
+  .toast.error { border-color: rgba(239,68,68,0.3); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text3);
+    font-size: 14px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @media (max-width: 600px) {
+    .add-form { grid-template-columns: 1fr 1fr; }
+    .btn-add { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a class="nav-logo" href="report.html">
+      <div class="nav-logo-icon">🚗</div>
+      MOBILLUG
+    </a>
+    <div class="nav-divider"></div>
+    <span class="nav-badge">관리자</span>
+  </div>
+  <div class="nav-right">
+    <a href="report.html" class="btn-nav">← 보고서로 돌아가기</a>
+    <button class="btn-nav" onclick="doLogout()">로그아웃</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-header">
+    <h1>👥 사용자 관리</h1>
+    <p>팀원 계정을 추가하고 역할을 설정하세요</p>
+  </div>
+
+  <!-- 사용자 추가 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">
+        <div class="icon">➕</div>
+        새 사용자 추가
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="add-form">
+        <div class="form-field">
+          <label>이름</label>
+          <input type="text" id="newName" placeholder="홍길동">
+        </div>
+        <div class="form-field">
+          <label>이메일</label>
+          <input type="email" id="newEmail" placeholder="user@example.com">
+        </div>
+        <div class="form-field">
+          <label>비밀번호</label>
+          <input type="password" id="newPw" placeholder="6자 이상">
+        </div>
+        <div class="form-field">
+          <label>역할</label>
+          <select id="newRole">
+            <option value="user">일반 직원</option>
+            <option value="admin">관리자</option>
+          </select>
+        </div>
+        <button class="btn-add" onclick="addUser()">계정 생성</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사용자 목록 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">
+        <div class="icon">👤</div>
+        등록된 사용자
+      </div>
+      <span id="userCount" style="font-size:13px; color:var(--text3);">-</span>
+    </div>
+    <div class="section-body">
+      <div class="user-list" id="userList">
+        <div class="empty-state">불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getDatabase, ref, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAtdO1c-bvADTGYdIEAfGN_Pc36g2hL3_4",
+    authDomain: "mobilog-report.firebaseapp.com",
+    databaseURL: "https://mobilog-report-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mobilog-report",
+    storageBucket: "mobilog-report.firebasestorage.app",
+    messagingSenderId: "135384880017",
+    appId: "1:135384880017:web:568e70398e403a0116c030",
+    measurementId: "G-PM8GWE977M"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  let currentUser = null;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    const snap = await get(ref(db, `users/${user.uid}/role`));
+    if (snap.val() !== 'admin') { window.location.href = 'report.html'; return; }
+    currentUser = user;
+    loadUsers();
+  });
+
+  async function loadUsers() {
+    const snap = await get(ref(db, 'users'));
+    const listEl = document.getElementById('userList');
+    const countEl = document.getElementById('userCount');
+
+    if (!snap.exists()) {
+      listEl.innerHTML = '<div class="empty-state">등록된 사용자가 없습니다</div>';
+      countEl.textContent = '0명';
+      return;
+    }
+
+    const users = snap.val();
+    const keys = Object.keys(users);
+    countEl.textContent = `${keys.length}명`;
+
+    listEl.innerHTML = keys.map(uid => {
+      const u = users[uid];
+      const isAdmin = u.role === 'admin';
+      const initial = (u.name || u.email || '?')[0].toUpperCase();
+      return `
+        <div class="user-item" id="item-${uid}">
+          <div class="user-avatar ${isAdmin ? 'avatar-admin' : 'avatar-user'}">${initial}</div>
+          <div class="user-info">
+            <div class="user-name">${u.name || '(이름 없음)'}</div>
+            <div class="user-email">${u.email}</div>
+          </div>
+          <span class="role-badge ${isAdmin ? 'badge-admin' : 'badge-user'}">${isAdmin ? 'ADMIN' : 'USER'}</span>
+          <div class="user-actions">
+            <button class="btn-role-change" onclick="toggleRole('${uid}', '${u.role}')">
+              ${isAdmin ? '일반으로 변경' : '관리자로 변경'}
+            </button>
+            <button class="btn-delete" onclick="deleteUser('${uid}', '${u.email}')" title="삭제">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.addUser = async function() {
+    const name = document.getElementById('newName').value.trim();
+    const email = document.getElementById('newEmail').value.trim();
+    const pw = document.getElementById('newPw').value;
+    const role = document.getElementById('newRole').value;
+
+    if (!name || !email || !pw) { showToast('모든 항목을 입력해주세요', 'error'); return; }
+    if (pw.length < 6) { showToast('비밀번호는 6자 이상이어야 합니다', 'error'); return; }
+
+    try {
+      // 임시 앱으로 계정 생성 (현재 세션 유지)
+      const { initializeApp: initApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+      const { getAuth: getAuth2, createUserWithEmailAndPassword: createUser } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+      const tempApp = initApp(firebaseConfig, `temp-${Date.now()}`);
+      const tempAuth = getAuth2(tempApp);
+      const cred = await createUser(tempAuth, email, pw);
+
+      await set(ref(db, `users/${cred.user.uid}`), { name, email, role, createdAt: Date.now() });
+
+      await tempAuth.signOut();
+
+      document.getElementById('newName').value = '';
+      document.getElementById('newEmail').value = '';
+      document.getElementById('newPw').value = '';
+
+      showToast(`✅ ${name} 계정이 생성되었습니다`, 'success');
+      loadUsers();
+    } catch (e) {
+      const msgs = {
+        'auth/email-already-in-use': '이미 사용 중인 이메일입니다',
+        'auth/invalid-email': '유효하지 않은 이메일입니다',
+        'auth/weak-password': '비밀번호가 너무 약합니다',
+      };
+      showToast(msgs[e.code] || e.message, 'error');
+    }
+  };
+
+  window.toggleRole = async function(uid, currentRole) {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin';
+    await update(ref(db, `users/${uid}`), { role: newRole });
+    showToast(`역할이 ${newRole === 'admin' ? '관리자' : '일반 직원'}으로 변경되었습니다`, 'success');
+    loadUsers();
+  };
+
+  window.deleteUser = async function(uid, email) {
+    if (!confirm(`${email} 사용자를 삭제하시겠습니까?\n(Firebase Auth 계정은 별도로 삭제해야 합니다)`)) return;
+    await remove(ref(db, `users/${uid}`));
+    showToast('사용자 정보가 삭제되었습니다', 'success');
+    loadUsers();
+  };
+
+  window.doLogout = async function() {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  };
+
+  function showToast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = `toast show ${type}`;
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
