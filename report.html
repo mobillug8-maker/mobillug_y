@@ -746,7 +746,7 @@ ${modelEntries.length===0
           <div style="position:absolute;top:0;left:0;right:0;border-top:1px dashed #E5E7EB;z-index:0"></div>
           <div style="position:absolute;top:60px;left:0;right:0;border-top:1px dashed #F3F4F6;z-index:0"></div>
           <div style="display:flex;align-items:flex-end;gap:4px;height:190px;padding-bottom:4px;padding-top:20px;min-width:max-content">
-          ${modelEntries.slice(0,8).map(([name,v])=>{
+          ${modelEntries.slice(0,12).map(([name,v])=>{
             const barH=Math.round((v.total/maxM)*120);
             const barColor=v.brand==='현대'?'#3B82F6':'#EF4444';
             const shortName=name.length>4?name.slice(0,4):name;
