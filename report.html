@@ -1001,7 +1001,8 @@ function handleInput(el){
   const v=el.value===''?null:parseInt(el.value);
   if(el.value!==''&&(isNaN(v)||v<0)){el.value='';return;}
   const mon=getMon();
-  if(v===null){delete mon[key][day];}else{mon[key][day]=v;}
+if(!mon[key]) mon[key]={};  // ← 이 줄만 추가!
+if(v===null){delete mon[key][day];}else{mon[key][day]=v;}
   // 전체 재렌더로 주간합계·달성율 정확히 반영
   renderKPI();
   renderGoalBar();
